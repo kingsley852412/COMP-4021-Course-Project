@@ -314,7 +314,12 @@ const GameRoom = (function() {
 
             $("#player-score").text(me.scores);
             $("#opponent-score").text(opponent.scores);
-            
+    
+            if (me.is_winner)
+                $('#game-over-message').text("You Win!!!")
+            else
+                $('#game-over-message').text("You Lose!!!")
+
         });
 
     }
