@@ -35,10 +35,10 @@ io.engine.use(gameSession)
 // ============= variables ==============
 // ============= variables ==============
 
-// A JavaScript object storing the players (from Lab06, Hand-Game)
+// A JavaScript object storing the players IN THE MATCH (from Lab06, Hand-Game)
 let players = {}
 
-// Indicate whether a game has started (from Lab06, Hand-Game)
+// Indicate whether a MATCH has started (from Lab06, Hand-Game)
 let gameStarted = false;
 
 // ======================================
@@ -48,6 +48,52 @@ let gameStarted = false;
 // This helper function checks whether the text only contains word characters
 function containWordCharsOnly(text) {
     return /^\w+$/.test(text);
+}
+
+// treeGenerator(total_length, MIN_GAP = 2, MAX_GAP = 3)
+//   -> string of EXACTLY total_length characters.
+//      Contains l/r branches separated by MIN_GAP..MAX_GAP 'n's.
+//      The tail may be padded with a few extra 'n's to hit the target length.
+function treeGenerator(total_length = 100, MIN_GAP = 2, MAX_GAP = 3) {
+    if (!Number.isInteger(total_length) || total_length <= 0) return "";
+
+    // leading gap so the first branch doesn't sit at the very bottom
+    const leadingGap = Math.min(
+        MIN_GAP + Math.floor(Math.random() * (MAX_GAP - MIN_GAP + 1)),
+        total_length
+    );
+    let tree = "n".repeat(leadingGap);
+
+    const MAX_SAME_SIDE_RUN = 2;
+    let lastSide = null;
+    let sameSideRun = 0;
+
+    while (tree.length < total_length) {
+        const remaining = total_length - tree.length;
+
+        // Not enough room for a branch + minimum gap after it -> pad & stop
+        if (remaining < 1 + MIN_GAP) {
+            tree += "n".repeat(remaining);
+            break;
+        }
+
+        // Pick a side, forcing a switch if we've been on one side too long
+        let side = Math.random() < 0.5 ? "l" : "r";
+        if (side === lastSide && sameSideRun >= MAX_SAME_SIDE_RUN) {
+            side = side === "l" ? "r" : "l";
+        }
+        if (side === lastSide) sameSideRun++;
+        else { sameSideRun = 1; lastSide = side; }
+
+        tree += side;
+
+        // Gap after this branch, clamped so we never overshoot total_length
+        const gap = MIN_GAP + Math.floor(Math.random() * (MAX_GAP - MIN_GAP + 1));
+        const room = total_length - tree.length;
+        tree += "n".repeat(Math.min(gap, room));
+    }
+
+    return tree;
 }
 
 // Handle the /register endpoint
@@ -242,20 +288,25 @@ io.on("connection", (socket) => {
             }
         }
 
+        console.log("socket.join success!")
+
         // Put the player in the players object
-        players[socket.id] = { username, ready: false };
+        players[socket.id] = {
+            username, 
+            is_winner: false,        // set to false by default
+            have_bomb: false, 
+            remaining_tree: treeGenerator(),       // a string representing the Tree
+            scores: 0,
+        };
 
         //
         // Send a success response to the browser
         //
         socket.emit("join_success")
 
-        //
-        // For the main page: broadcast the players to the connected browsers
-        //
-
-        // Add your code here   (TODO!!!!!!!!!, switch these from lab to project codes)
-        io.emit("update_players", players)
+        // Start the Game when there are 2 players
+        // also Broadcast to 2 player-browsers
+        if (Object.keys(players).length == 2) startGame();
 
         console.log("Current players -", players); // DON'T DELETE - FOR MARKING
     });
@@ -264,53 +315,28 @@ io.on("connection", (socket) => {
         //
         // Tell the browsers to start the game
         //
-
-        // Add your code here
+        for (const key in players){
+            //init ALL player, resetting their Scores/Winning status/etc...
+            const player = players[key];
+            player.is_winner =  false
+            player.have_bomb =  false
+            player.remaining_tree =  treeGenerator()
+            player.scores = 0
+        }
 
         gameStarted = true;
+        io.emit("game_start", players);      // although all browser recieves signal, only player in match will start game.
     };
 
-    // Wait for a player to get ready in the game
-    socket.on("ready", () => {
-        // Mark the player as ready
-        players[socket.id]["ready"] = true;
-
-        //
-        // Broadcast the players to the connected browsers
-        //
-
-        // Add your code here
-        io.emit("update_players", players);
-
-
-        //
-        // Check if everybody is ready;
-        // if so, start the game automatically
-        //
-
-        // Add your code here
-        let all_ready = true;
-        for (const id in players) {
-            const player = players[id];
-
-            // Check the status of each player
-            if (!player["ready"]){
-                all_ready = false;
-                break;
-            }
-        }
-        if (all_ready){
-            gameStarted = true;
-            io.emit("game_start");
-        }
-
-        console.log("Current players -", players); // DON'T DELETE - FOR MARKING
-    });
-
-    const finishGame = function() {
+    const finishGame = function(winner_socket_id) {
         //
         // Tell the browsers the game has finished
         //
+        if (winner_socket_id && players[winner_socket_id]) {
+            players[winner_socket_id].is_winner = true;
+        }
+        else
+            console.log("finishGame Error: winner socket id not specified, or not in \"player\"!");
 
         // Add your code here
         io.emit('game_end', players);
@@ -320,51 +346,80 @@ io.on("connection", (socket) => {
         gameStarted = false;
     };
 
-    // Set up the choose event
-    socket.on("choose", (sign) => {
-        // Assign the sign to the player
-        players[socket.id]["sign"] = sign;
-
-        //
-        // Check if everybody has selected a hand sign;
-        // if so, the game will finish
-        //
-
-        // Add your code here
-        let all_chosen = true;
-        for (const id in players){
-            let player = players[id];
-
-            if (!player["sign"]){
-                all_chosen = false;
-                return;
-            }
-        }
-        if (all_chosen){
-            finishGame()
-        }
-
-        console.log("Current players -", players); // DON'T DELETE - FOR MARKING
-    });
-
     // In case a player is disconnected from the game
     socket.on("disconnect", () => {
         // Remove the player from the game
-        if (players[socket.id]) {
-            delete players[socket.id];
+        if (!players[socket.id]) return;       // do NOTHING is you are NOT in Match
 
-            // Broadcast the players to the connected browsers
-            io.emit("update_players", players);
+        delete players[socket.id];      // remove u from the MATCH
+
+        if (gameStarted) {              // if there is currently a MATCH
+            const opponentId = Object.keys(players)[0];   // only one left
+            finishGame(opponentId);     // announce opponent as Winner
         }
     });
+
+    // ── shared chop logic ─────────────────────────────────
+    const handleChop = function (side) {           // side is "l" or "r"
+        if (!gameStarted) return;
+        if (!players[socket.id]) return;
+        
+        if (side != 'l' && side != 'r'){
+            console.log("error in handleChop(): invalid input parameter!");
+            return;
+        }
+
+        const score_per_trunk = 10;
+        const get_bomb_probability = 0.05;
+
+        const player = players[socket.id];
+
+        // Defensive: shouldn't happen during normal play
+        if (player.remaining_tree.length <= 0) {
+            const opponentId = Object.keys(players).find(id => id !== socket.id);
+            finishGame(opponentId);
+            return;
+        }
+
+        const current_trunk = player.remaining_tree[0];   // timberman's current level
+        const next_trunk    = player.remaining_tree[1];   // the one directly above (may be undefined)
+
+        // ── DEATH CHECK ──
+        // e.g. Pressing left when the NEXT trunk has a left branch (or right/right) = hit it
+        if (next_trunk === side) {
+            const opponentId = Object.keys(players).find(id => id !== socket.id);
+            finishGame(opponentId);
+            return;
+        }
+
+        // ── SUCCESS ──
+        // Consume the current trunk (timberman moves up)
+        player.remaining_tree = player.remaining_tree.slice(1);
+        player.scores += score_per_trunk;
+
+        // 5% chance to gain a bomb
+        if (Math.random() < get_bomb_probability) {
+            player.have_bomb = true;
+        }
+
+        // Sync both browsers
+        io.emit("game_state_update", players);
+
+        // If the tree is now empty, this player cleared it → they win
+        if (player.remaining_tree.length === 0) {
+            finishGame(socket.id);
+        }
+    };
+
+    // ── wire up both keys ────────────────────────────────
+    socket.on("left_key",  () => handleChop("l"));
+    socket.on("right_key", () => handleChop("r"));
+
+
 });
 
 
-
 // Use a web server to listen at port 8000
-// app.listen(8000, () => {
-//     console.log("The game server has started...");
-// });
 httpServer.listen(8000, () => {
     console.log("The game server has started...");
 });

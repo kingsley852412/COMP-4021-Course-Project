@@ -5,6 +5,9 @@ const GameRoom = (function() {
     // this stores the socket, which will be created after Successful Login
     let socket = null;
 
+    // this stores whether the player is during a match or in match-making page
+    let in_game = false;
+
     const init = function() {
         // Populate the avatar selection
         Avatar.populate($("#register-avatar"));
@@ -194,6 +197,35 @@ const GameRoom = (function() {
             // Send a join_game request via socket
             socket.emit("join");
         });
+
+        $(document).on("keydown", function(e) {
+            // Only react when the game page is actually shown
+            if (!$("#timberman-game-page").is(":visible")) return;
+
+            switch (e.key) {
+                case "ArrowLeft":
+                    e.preventDefault();
+                    console.log("left pressed");
+                    // → chop left / move left / whatever Timberman does
+                    socket.emit("left_key")
+                    break;
+
+                case "ArrowRight":
+                    e.preventDefault();
+                    console.log("right pressed");
+                    // → chop right
+                    socket.emit("right_key")
+                    break;
+
+                case " ":              // ← the spacebar is the string " "
+                case "Spacebar":       // older browsers
+                    e.preventDefault();
+                    console.log("space pressed");
+                    socket.emit("spacebar")
+                    // → use Bomb
+                    break;
+            }
+        });
     }
 
     const validate = function() {
@@ -222,7 +254,7 @@ const GameRoom = (function() {
                 $("#game-room-user-name").text(user.name);
 
                 // Connect to the Socket.IO socket
-                socket = io();
+                init_socket();
 
                 // Show the content page
                 $("#game-room-start-page").hide();
@@ -250,7 +282,51 @@ const GameRoom = (function() {
             $("#join-message").text("");              // ← clear old error message
             $("#before-joining-page").hide();
             $("#match-making-page").show();
+
+            in_game = true;     // the player is in MATCH-MAKING now
         });
+
+        socket.on("game_start", (players) => {
+            // if this player isnt the 2 players in the match/matchmaking, Do NOTHING!
+            if (!in_game) return;
+
+            // switch to gameplay page
+            $("#match-making-page").hide();
+            $("#timberman-game-page").show();
+
+            render_tree(players)
+        });
+
+        socket.on("game_state_update", (players) => {
+            // if this player isnt the 2 players in the match, Do NOTHING!
+            if (!in_game) return;
+
+            render_tree(players)
+        });
+
+        socket.on("game_end", (players) => {
+            // if this player isnt the 2 players in the match, Do NOTHING!
+            if (!in_game) return;
+
+            in_game = false;
+        });
+
+    }
+
+    // helper function for slicing the first 10 char in the Tree strings
+    const short = (v) => String(v ?? "").slice(0, 10);
+
+    const render_tree = function(players) {
+        const me = players[socket.id];         // ← your own entry
+
+        // Now `me` is { username, is_player_a, remaining_tree, ... }
+        // and you can find the opponent by removing yourself:
+        const opponentId = Object.keys(players).find(id => id !== socket.id);
+        const opponent = players[opponentId];
+
+        $("#player-tree").text("You: "      + short(me.remaining_tree));
+        $("#opponent-tree").text("Opponent: " + short(opponent.remaining_tree));
+    
     }
 
     return { init, validate };
