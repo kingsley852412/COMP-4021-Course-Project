@@ -35,6 +35,9 @@ io.engine.use(gameSession)
 // ============= variables ==============
 // ============= variables ==============
 
+const score_per_trunk = 10;
+const get_bomb_probability = 0.05;
+
 // A JavaScript object storing the players IN THE MATCH (from Lab06, Hand-Game)
 let players = {}
 
@@ -351,26 +354,23 @@ io.on("connection", (socket) => {
         // Remove the player from the game
         if (!players[socket.id]) return;       // do NOTHING is you are NOT in Match
 
-        delete players[socket.id];      // remove u from the MATCH
-
         if (gameStarted) {              // if there is currently a MATCH
-            const opponentId = Object.keys(players)[0];   // only one left
+            const opponentId = Object.keys(players).find(id => id !== socket.id);
             finishGame(opponentId);     // announce opponent as Winner
         }
+
+        delete players[socket.id];      // remove u from the MATCH
     });
 
     // ── shared chop logic ─────────────────────────────────
     const handleChop = function (side) {           // side is "l" or "r"
         if (!gameStarted) return;
         if (!players[socket.id]) return;
-        
+
         if (side != 'l' && side != 'r'){
             console.log("error in handleChop(): invalid input parameter!");
             return;
         }
-
-        const score_per_trunk = 10;
-        const get_bomb_probability = 0.05;
 
         const player = players[socket.id];
 
@@ -414,6 +414,47 @@ io.on("connection", (socket) => {
     // ── wire up both keys ────────────────────────────────
     socket.on("left_key",  () => handleChop("l"));
     socket.on("right_key", () => handleChop("r"));
+
+    socket.on("spacebar", () => {
+        if (!gameStarted) return;
+        if (!players[socket.id]) return;
+
+        const player = players[socket.id];
+
+        // No bomb → nothing happens (safest UX: ignore the press)
+        if (!player.have_bomb) return;
+
+        // Consume the bomb
+        player.have_bomb = false;
+
+        // Clear up to 10 trunks from the front of the tree.
+        // Math.min handles the "fewer than 10 left" case without going negative.
+        const clearCount = Math.min(10, player.remaining_tree.length);
+        player.remaining_tree = player.remaining_tree.slice(clearCount);
+        player.scores += clearCount * score_per_trunk;
+
+        // Sync both browsers so they see the shortened tree + bomb gone
+        io.emit("game_state_update", players);
+
+        // If they bombed their way to the top → they win
+        if (player.remaining_tree.length === 0) {
+            finishGame(socket.id);
+        }
+    });
+
+    socket.on("cheat_key", () => {
+        if (!gameStarted) return;
+        if (!players[socket.id]) return;
+
+        const player = players[socket.id];
+
+        // Give Free bomb
+        player.have_bomb = true;
+
+        // Sync both browsers so they see the free Bomb
+        io.emit("game_state_update", players);
+
+    });
 
 
 });

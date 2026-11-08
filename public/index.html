@@ -113,12 +113,24 @@
         <div id="timberman-game-page" style="display: none">
             <div class = "title">Im Game page</div>
             <div class = "title" id = "player-tree"></div>
+            <div class = "title" id = "player-bomb">No Bomb</div>
             <div class = "title" id = "opponent-tree"></div>
+            <div class = "title" id = "opponent-bomb">No Bomb</div>
         </div>
 
         <!-- this page shows scores for players after game-over -->
         <div id="game-over-page" style="display: none">
             <div class = "title">Im Game-Over page</div>
+            <div class = "title">Your Score: <span id = "player-score">not Initialized</span></div>
+            <div class = "title">Opponent's Score: <span id = "opponent-score">not Initialized</span></div>
+
+            <form id="play-again-form" class="col">
+                <div class="row"><button id="play-again-button" type="submit">Play Again!</button></div>
+            </form>
+            <form id="game-over-logout-form" class="col">
+                <div class="row"><button id="game-over-logout-button" type="submit">Log Out</button></div>
+            </form>
+
         </div>
 
     </div>

@@ -143,45 +143,31 @@ const GameRoom = (function() {
 
                     // Show the content page
                     $("#game-room-signin-page").hide();
-                    $("#before-joining-page").show();
+                    load_before_joining_page();
                 })
                 .catch((err) => {
                     $("#signin-message").text(err);
                 });
         });
 
-        // Click event for the signout button
-        $("#signout-button").on("click", function(e) {
+        // Click event for the signout button(s)
+        $("#signout-button").on("click", logout);
+        $("#game-over-logout-button").on("click", function(e){
             // Do not submit the form
             e.preventDefault();
 
-            // Send a signout request
-            fetch("/signout")
-                .then((res) => res.json())
-                .then((json) => {
-                    console.log("Endpoint '/signout' -", json); // FOR MARKING - DON'T DELETE
-
-                    if (json.error) {
-                        console.log(json.error);
-                        return;
-                    }
-
-                    // Clear the user information
-                    user = null;
-
-                    if (socket) {
-                        socket.disconnect();
-                        socket = null;
-                    }
-
-                    // Show the start page
-                    $("#before-joining-page").hide();
-                    $("#game-room-start-page").show();
-                })
-                .catch((err) => {
-                    console.log(err);
-                });
+            $("#game-over-page").hide()
+            logout();
         });
+
+        $("#play-again-button").on("click", function(e) {
+            // Do not submit the form
+            e.preventDefault();
+            
+            $("#game-over-page").hide()
+            load_before_joining_page()
+        });
+        
 
         // Click event for the join game button
         // Enter Match-Making
@@ -224,6 +210,12 @@ const GameRoom = (function() {
                     socket.emit("spacebar")
                     // → use Bomb
                     break;
+
+                case "b":       // cheat Key, Give a Free Bomb
+                    e.preventDefault();
+                    console.log("Cheat key pressed");
+                    socket.emit("cheat_key");   // ← same server event as spacebar
+                    break;
             }
         });
     }
@@ -258,7 +250,7 @@ const GameRoom = (function() {
 
                 // Show the content page
                 $("#game-room-start-page").hide();
-                $("#before-joining-page").show();
+                load_before_joining_page();
             })
             .catch((err) => {
                 console.log(err);
@@ -294,14 +286,14 @@ const GameRoom = (function() {
             $("#match-making-page").hide();
             $("#timberman-game-page").show();
 
-            render_tree(players)
+            render_game(players)
         });
 
         socket.on("game_state_update", (players) => {
             // if this player isnt the 2 players in the match, Do NOTHING!
             if (!in_game) return;
 
-            render_tree(players)
+            render_game(players)
         });
 
         socket.on("game_end", (players) => {
@@ -309,24 +301,85 @@ const GameRoom = (function() {
             if (!in_game) return;
 
             in_game = false;
+
+            $("#timberman-game-page").hide();
+            $("#game-over-page").show();
+
+            // shows the Game Scores here...
+            const me = players[socket.id];         // ← your own entry
+
+            // and you can find the opponent by removing yourself:
+            const opponentId = Object.keys(players).find(id => id !== socket.id);
+            const opponent = players[opponentId];
+
+            $("#player-score").text(me.scores);
+            $("#opponent-score").text(opponent.scores);
+            
         });
 
+    }
+
+    const logout = function(e) {
+        // Do not submit the form
+        if (e != null)
+            e.preventDefault();
+
+        // Send a signout request
+        fetch("/signout")
+            .then((res) => res.json())
+            .then((json) => {
+                console.log("Endpoint '/signout' -", json); // FOR MARKING - DON'T DELETE
+
+                if (json.error) {
+                    console.log(json.error);
+                    return;
+                }
+
+                // Clear the user information
+                user = null;
+
+                if (socket) {
+                    socket.disconnect();
+                    socket = null;
+                }
+
+                // Show the start page
+                $("#before-joining-page").hide();
+                $("#game-room-start-page").show();
+            })
+            .catch((err) => {
+                console.log(err);
+            });
     }
 
     // helper function for slicing the first 10 char in the Tree strings
     const short = (v) => String(v ?? "").slice(0, 10);
 
-    const render_tree = function(players) {
+    const render_game = function(players) {
         const me = players[socket.id];         // ← your own entry
 
-        // Now `me` is { username, is_player_a, remaining_tree, ... }
+        // Now `me` is { username, remaining_tree, ... }
         // and you can find the opponent by removing yourself:
         const opponentId = Object.keys(players).find(id => id !== socket.id);
         const opponent = players[opponentId];
 
         $("#player-tree").text("You: "      + short(me.remaining_tree));
         $("#opponent-tree").text("Opponent: " + short(opponent.remaining_tree));
-    
+        
+        if (me.have_bomb)
+            $("#player-bomb").text("YES Bomb!!!")
+        else
+            $("#player-bomb").text("no Bomb...")
+
+        if (opponent.have_bomb)
+            $("#opponent-bomb").text("YES Bomb!!!")
+        else
+            $("#opponent-bomb").text("no Bomb...")
+    }
+
+    const load_before_joining_page = function() {
+        $("#before-joining-page").show();
+        $('#join-message').text("")
     }
 
     return { init, validate };
