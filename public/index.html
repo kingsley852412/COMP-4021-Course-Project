@@ -74,6 +74,16 @@
                         <span id="game-room-user-avatar">avatar</span>
                         <span id="game-room-user-name">name</span>!
                     </div>
+
+                    <div>
+                    <ul>
+                        <li>the goal of the game is to use left and right arrow key to cut down a very tall tree with branches on the side.</li>
+                        <li>during the process, player has to use the correct arrow key to dodge the branches from left and right, while competing with the other player to cut down the tree with least time.</li>
+                        <li>Cutting tree has a chance of Getting Bomb as a bonus item, which can be used by pressing spacekey, removing 10 trunks from the tree immediately</li>
+                    </ul>
+
+                    </div>
+
                     <form id="join-game-form" class="col">
                         <div class="row"><button id="join-game-button" type="submit">Join a Game!</button></div>
                         <div class="row" id = "join-message">joining response appears here!</div>
@@ -139,6 +149,8 @@
     <!-- JavaScript files for the game room -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="scripts/avatar.js"></script>
+    <script src="scripts/audioManager.js"></script>
+
     <script src="scripts/game.js"></script>
 
     <!-- Initialize the game room -->
