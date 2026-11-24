@@ -1,20 +1,30 @@
 const AudioManager = (function() {
     const sounds_folder_path = "sounds"
     const sounds = {
-        background: new Audio(sounds_folder_path + "/background.mp3"),
-        collect: new Audio(sounds_folder_path + "/collect.mp3"),
-        gameover: new Audio(sounds_folder_path + "/gameover.mp3"),
-        gamewin: new Audio(sounds_folder_path + "/gamewin.mp3"),
-        buttonClick: new Audio(sounds_folder_path + "/buttonClick.mp3"),
+        collect:        new Audio(sounds_folder_path + "/collect.mp3"),
+        gameover:       new Audio(sounds_folder_path + "/gameover.mp3"),
+        gamewin:        new Audio(sounds_folder_path + "/gamewin.mp3"),
+        buttonClick:    new Audio(sounds_folder_path + "/buttonClick.mp3"),
     }
 
-    // Configure background music to loop automatically
-    sounds.background.loop = true;
-    sounds.background.volume = 0.4;
+    const musics = {
+        background:         new Audio(sounds_folder_path + "/background.mp3"),
+        gameroomBackground: new Audio(sounds_folder_path + "/gameroomBackground.mp3")
+    }
+
+    for (const key in musics) {
+        // Configure every music to loop automatically
+        musics[key].loop = true;
+        musics[key].volume = 0.4;
+    };
+
+    let currentBGM = null;   // key of the BGM track currently playing
 
     const init = function(socket) {
         console.log('AudioManager.init() running')
         
+        playBGM('gameroomBackground');
+
         // Also pass Socket instance in this function, for setting up Socket-related functions
         if (!socket)
             console.warn(`warning: audioManager.init() socket not passed in!`);
@@ -26,12 +36,12 @@ const AudioManager = (function() {
 
         // play BGM when game_start
         socket.on('game_start', (players) => {
-            startBGM();
+            playBGM('background');
         });
         
         // stop BGM when game_end
         socket.on('game_end', (players) => {
-            stopBGM();
+            playBGM('gameroomBackground')
 
             const me = players[socket.id];         // ← your own entry
 
@@ -44,16 +54,35 @@ const AudioManager = (function() {
         
     }
 
-    const startBGM = function() {
-        sounds.background.play().catch(err => {
-            console.log("BGM autoplay prevented. Waiting for user interaction.", err);
+    const playBGM = function(trackName) {
+        if (!trackName) stopBGM();
+
+        const track = musics[trackName];
+
+        if (!track) {
+            console.warn(`BGM "${trackName}" not found in AudioManager.`);
+            return;
+        }
+
+        // Stop everything that isn't the requested track
+        stopBGM();
+
+        track.currentTime = 0;
+
+        currentBGM = trackName;
+        track.play().catch(err => {
+            console.log(`BGM "${trackName}" play blocked:`, err);
         });
     };
 
     const stopBGM = function() {
-        sounds.background.pause();
-        sounds.background.currentTime = 0; // Reset music to the beginning
+        for (const key in musics) {
+            musics[key].pause();
+            musics[key].currentTime = 0;
+        }
+        currentBGM = null;
     };
+
 
     const playSFX = function(soundName) {
         const sound = sounds[soundName];
@@ -76,8 +105,7 @@ const AudioManager = (function() {
     return {
         init,
 
-        startBGM,
-        stopBGM,
-        playSFX,
+        // playBGM,
+        // playSFX,  // no need to export, all binding are done in this file
     };
 })();
