@@ -4,6 +4,60 @@
     <title>The Game Room</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link href="style.css" rel="stylesheet">
+	<style> 
+	#timberman-game-page {
+		position: relative;
+		width: 1920px;
+		height: 1080px;
+	}
+
+	#timberman-game-page svg,
+	#timberman-game-page canvas {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	#timberman-game-page svg {
+		z-index: 1;
+	}
+
+	#tree-canvas {
+		z-index: 2;
+	}
+
+	#player-canvas {
+		z-index: 3;
+	}
+	
+	.top-layer {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		z-index: 4;
+	}
+	
+	.bomb-icon {
+		position: absolute;
+		top: 100px;
+		width: 257px;   /* adjust to match your image/HUD scale */
+		height: 325px;
+	}
+	
+	#player-bomb {	
+		left: 25px;
+		
+	}
+	
+	#opponent-bomb {
+		right: 25px;
+	}
+	
+
+	
+	</style>
 </head>
 <body>
     <!-- The game room area -->
@@ -111,11 +165,37 @@
 
         <!-- the page where player ACTUALLY plays the game -->
         <div id="timberman-game-page" style="display: none">
-            <div class = "title">Im Game page</div>
-            <div class = "title" id = "player-tree"></div>
-            <div class = "title" id = "player-bomb">No Bomb</div>
-            <div class = "title" id = "opponent-tree"></div>
-            <div class = "title" id = "opponent-bomb">No Bomb</div>
+		
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+			<defs> 
+				<linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+					<stop offset="0" stop-color="blue" /> 
+					<stop offset="1" stop-color="skyblue" />
+				</linearGradient> 
+				<linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
+					<stop offset="0" stop-color="green" /> 
+					<stop offset="1" stop-color="yellow" />
+				</linearGradient> 
+				
+			</defs>
+				<rect height="700" width="1920" y="0" x="0" stroke="none" fill="url(#sky)"/>
+				<rect height="328" width="1920" y="700" x="0" stroke="none" fill="url(#ground)"/>
+			</svg>
+			<canvas id="tree-canvas" width="1920" height="1080"></canvas>
+			<canvas id="player-canvas" width="1920" height="1080"></canvas>
+			<div class = "top-layer"> 
+				
+				<img id="player-bomb" class="bomb-icon" src="../images/bombNo.png">
+				<img id="opponent-bomb" class="bomb-icon" src="../images/bombNo.png">
+				
+			
+			
+			</div>
+			<div class = "title">Im Game page</div>
+			<div class = "title" id = "player-tree"></div>
+			<div class = "title" id = "opponent-tree"></div>
+			
+            
         </div>
 
         <!-- this page shows scores for players after game-over -->
@@ -140,6 +220,10 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="scripts/avatar.js"></script>
     <script src="scripts/game.js"></script>
+	<script src="scripts/bounding_box.js"></script>
+    <script src="scripts/sprite.js"></script>
+    <script src="scripts/player.js"></script>
+    <script src="scripts/tree.js"></script>
 
     <!-- Initialize the game room -->
     <script>

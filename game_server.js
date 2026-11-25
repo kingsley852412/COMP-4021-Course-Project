@@ -300,6 +300,8 @@ io.on("connection", (socket) => {
             have_bomb: false, 
             remaining_tree: treeGenerator(),       // a string representing the Tree
             scores: 0,
+			dir: 0,
+			status: 0
         };
 
         //
@@ -325,6 +327,8 @@ io.on("connection", (socket) => {
             player.have_bomb =  false
             player.remaining_tree =  treeGenerator()
             player.scores = 0
+			player.dir = 0
+			player.status = 0;
         }
 
         gameStarted = true;
@@ -361,6 +365,14 @@ io.on("connection", (socket) => {
 
         delete players[socket.id];      // remove u from the MATCH
     });
+	
+	const handleIdle = function (){
+		if (!gameStarted) return;
+        if (!players[socket.id]) return;
+		const player = players[socket.id];
+		player.status = 0;
+		io.emit("game_state_update", players);
+	}
 
     // ── shared chop logic ─────────────────────────────────
     const handleChop = function (side) {           // side is "l" or "r"
@@ -383,6 +395,10 @@ io.on("connection", (socket) => {
 
         const current_trunk = player.remaining_tree[0];   // timberman's current level
         const next_trunk    = player.remaining_tree[1];   // the one directly above (may be undefined)
+		
+		if (side === 'l') player.dir = 1;
+		else player.dir = 2;
+		player.status = 1;
 
         // ── DEATH CHECK ──
         // e.g. Pressing left when the NEXT trunk has a left branch (or right/right) = hit it
@@ -396,6 +412,8 @@ io.on("connection", (socket) => {
         // Consume the current trunk (timberman moves up)
         player.remaining_tree = player.remaining_tree.slice(1);
         player.scores += score_per_trunk;
+		
+		
 
         // 5% chance to gain a bomb
         if (Math.random() < get_bomb_probability) {
@@ -414,6 +432,8 @@ io.on("connection", (socket) => {
     // ── wire up both keys ────────────────────────────────
     socket.on("left_key",  () => handleChop("l"));
     socket.on("right_key", () => handleChop("r"));
+	
+	socket.on("key_up", () => handleIdle());
 
     socket.on("spacebar", () => {
         if (!gameStarted) return;
