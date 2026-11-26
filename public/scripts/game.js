@@ -172,7 +172,8 @@ const GameRoom = (function() {
         $("#game-over-logout-button").on("click", function(e){
             // Do not submit the form
             e.preventDefault();
-
+			$("#green-man").attr("src", "../images/Green-man.png");
+			$("#blue-man").attr("src", "../images/Blue-man.png");
             $("#game-over-page").hide()
             logout();
         });
@@ -180,7 +181,8 @@ const GameRoom = (function() {
         $("#play-again-button").on("click", function(e) {
             // Do not submit the form
             e.preventDefault();
-            
+            $("#green-man").attr("src", "../images/Green-man.png");
+			$("#blue-man").attr("src", "../images/Blue-man.png");
             $("#game-over-page").hide()
             load_before_joining_page()
         });
@@ -196,7 +198,8 @@ const GameRoom = (function() {
                 $("#join-message").text("Socket not connected. Please try again.");
                 return;
             }
-
+			
+			$("#green-man").attr("src", "../images/Green-man-matching.png");
             // Send a join_game request via socket
             socket.emit("join");
         });
@@ -308,6 +311,7 @@ const GameRoom = (function() {
             // switch to gameplay page
             $("#match-making-page").hide();
             $("#timberman-game-page").show();
+			$(".bg-img").hide();
 
             render_game(players)
         });
@@ -327,6 +331,7 @@ const GameRoom = (function() {
 
             $("#timberman-game-page").hide();
             $("#game-over-page").show();
+			$(".bg-img").show();
 
             // shows the Game Scores here...
             const me = players[socket.id];         // ← your own entry
@@ -340,17 +345,18 @@ const GameRoom = (function() {
     
             if (me.is_winner){
                 $('#game-over-message').text("You Win!!!");
+				$("#green-man").attr("src", "../images/Green-man-lose.png");
+				$("#blue-man").attr("src", "../images/Blue-man-win.png");
+				
 				
             }else{
                 $('#game-over-message').text("You Lose!!!");
+				$("#green-man").attr("src", "../images/Green-man-win.png");
+				$("#blue-man").attr("src", "../images/Blue-man-lose.png");
 			
 			}
         });
 		
-		//socket.on("play_sfx", ({ sound, volume }) => {
-		//	AudioManager.playSfx(sound, volume);
-		//});
-
     }
 
     const logout = function(e) {
