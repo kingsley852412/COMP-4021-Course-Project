@@ -5,11 +5,15 @@ const AudioManager = (function() {
         gameover:       new Audio(sounds_folder_path + "/gameover.mp3"),
         gamewin:        new Audio(sounds_folder_path + "/gamewin.mp3"),
         buttonClick:    new Audio(sounds_folder_path + "/buttonClick.mp3"),
+		    chop:         new Audio(sounds_folder_path + "/chop.mp3"),
+        bomb_pickup:  new Audio(sounds_folder_path + "/bomb_pickup.mp3"),
+        bomb:         new Audio(sounds_folder_path + "/bomb.mp3"),
+        //collect:      new Audio(sounds_folder_path + "/collect.mp3"),
     }
 
     const musics = {
-        background:         new Audio(sounds_folder_path + "/background.mp3"),
-        gameroomBackground: new Audio(sounds_folder_path + "/gameroomBackground.mp3")
+        background:         new Audio(sounds_folder_path + "/background2.mp3"),
+        gameroomBackground: new Audio(sounds_folder_path + "/background.mp3")
     }
 
     for (const key in musics) {
@@ -38,6 +42,8 @@ const AudioManager = (function() {
         socket.on('game_start', (players) => {
             playBGM('background');
         });
+		
+		
         
         // stop BGM when game_end
         socket.on('game_end', (players) => {
@@ -50,7 +56,12 @@ const AudioManager = (function() {
             else
                 playSFX('gameover')
         });
+		
+		socket.on("play_sfx", ({ sound, volume }) => {
+            playSFX(sound);
+        });
 
+		
         
     }
 

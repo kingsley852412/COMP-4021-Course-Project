@@ -24,9 +24,6 @@ const GameRoom = (function() {
         // Populate the avatar selection
         Avatar.populate($("#register-avatar"));
 		
-		$("#start-signin-button, #start-register-button, #join-game-button").on("click", function() {
-			AudioManager.playBgm(0.5);
-		});
 		
         $("#start-signin-button").on("click", function() {
             // Show the signin page
@@ -343,16 +340,16 @@ const GameRoom = (function() {
     
             if (me.is_winner){
                 $('#game-over-message').text("You Win!!!");
-				AudioManager.playSfx("win", 1);
+				
             }else{
                 $('#game-over-message').text("You Lose!!!");
-				AudioManager.playSfx("lose", 1);
+			
 			}
         });
 		
-		socket.on("play_sfx", ({ sound, volume }) => {
-			AudioManager.playSfx(sound, volume);
-}		);
+		//socket.on("play_sfx", ({ sound, volume }) => {
+		//	AudioManager.playSfx(sound, volume);
+		//});
 
     }
 
@@ -490,6 +487,20 @@ const GameRoom = (function() {
         $("#before-joining-page").show();
         $('#join-message').text("")
     }
+	
+	function resizeGameStage() {
+		const stage = document.getElementById("timberman-game-page");
+		if (!stage) return;
+
+		const scaleX = window.innerWidth / 1920;
+		const scaleY = window.innerHeight / 1080;
+		// Use Math.min so the full 1920x1080 scene always fits in 16:9 proportion
+		const scale = Math.min(scaleX, scaleY);
+
+		stage.style.transform = `scale(${scale})`;
+	}
+
+	$(window).on("resize", resizeGameStage);
 
     return {
         init,

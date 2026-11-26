@@ -8,5 +8,15 @@
         "avatar": "Rabbit",
         "name": "May Wong",
         "password": "$argon2id$v=19$m=65536,t=3,p=4$xMhrz2aNUdQ3pM9J30woiw$I68tvur+uRmrYnyYNZfaYP4V8f060LSi4UY7MReA9+I"
+    },
+    "test": {
+        "avatar": "Hamster",
+        "name": "test",
+        "password": "$argon2id$v=19$m=65536,t=3,p=4$dA3TxgOcywS5DQk8YwjXNw$M+m0YS9ZyQFLaqOcH8r1/KFPwN+KESqKNkLcTIzFkJo"
+    },
+    "test2": {
+        "avatar": "Bird",
+        "name": "test2",
+        "password": "$argon2id$v=19$m=65536,t=3,p=4$aHwEI2olEAUg6P+JL/IC+A$kfrPlT9GmB3Gc2H8LlK4nZNdMZYXmHAqD3V6dOD5pIk"
     }
 }
