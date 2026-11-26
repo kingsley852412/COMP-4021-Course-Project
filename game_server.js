@@ -399,6 +399,7 @@ io.on("connection", (socket) => {
 		if (side === 'l') player.dir = 1;
 		else player.dir = 2;
 		player.status = 1;
+		socket.emit("play_sfx", { sound: "chop", volume: 0.5 });
 
         // ── DEATH CHECK ──
         // e.g. Pressing left when the NEXT trunk has a left branch (or right/right) = hit it
@@ -418,6 +419,7 @@ io.on("connection", (socket) => {
         // 5% chance to gain a bomb
         if (Math.random() < get_bomb_probability) {
             player.have_bomb = true;
+			socket.emit("play_sfx", { sound: "bomb_pickup", volume: 0.8 });
         }
 
         // Sync both browsers
@@ -446,6 +448,7 @@ io.on("connection", (socket) => {
 
         // Consume the bomb
         player.have_bomb = false;
+		socket.emit("play_sfx", { sound: "bomb", volume: 0.5 });
 
         // Clear up to 10 trunks from the front of the tree.
         // Math.min handles the "fewer than 10 left" case without going negative.
@@ -470,12 +473,14 @@ io.on("connection", (socket) => {
 
         // Give Free bomb
         player.have_bomb = true;
+		socket.emit("play_sfx", { sound: "bomb_pickup", volume: 0.8 });
 
         // Sync both browsers so they see the free Bomb
         io.emit("game_state_update", players);
 
     });
 
+	
 
 });
 

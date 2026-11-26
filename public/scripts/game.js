@@ -21,7 +21,11 @@ const GameRoom = (function() {
     const init = function() {
         // Populate the avatar selection
         Avatar.populate($("#register-avatar"));
-
+		
+		$("#start-signin-button, #start-register-button, #join-game-button").on("click", function() {
+			AudioManager.playBgm(0.5);
+		});
+		
         $("#start-signin-button").on("click", function() {
             // Show the signin page
             $("#game-room-start-page").hide();
@@ -331,12 +335,18 @@ const GameRoom = (function() {
             $("#player-score").text(me.scores);
             $("#opponent-score").text(opponent.scores);
     
-            if (me.is_winner)
-                $('#game-over-message').text("You Win!!!")
-            else
-                $('#game-over-message').text("You Lose!!!")
-
+            if (me.is_winner){
+                $('#game-over-message').text("You Win!!!");
+				AudioManager.playSfx("win", 1);
+            }else{
+                $('#game-over-message').text("You Lose!!!");
+				AudioManager.playSfx("lose", 1);
+			}
         });
+		
+		socket.on("play_sfx", ({ sound, volume }) => {
+			AudioManager.playSfx(sound, volume);
+}		);
 
     }
 
