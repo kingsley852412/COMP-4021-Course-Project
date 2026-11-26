@@ -19,6 +19,8 @@ const GameRoom = (function() {
 	
 
     const init = function() {
+        console.log('GameRoom.init() running')
+
         // Populate the avatar selection
         Avatar.populate($("#register-avatar"));
 		
@@ -150,7 +152,11 @@ const GameRoom = (function() {
                     $("#game-room-user-name").text(user.name);
 
                     // Connect to the Socket.IO socket, and do Socket Init
-                    init_socket()
+                    init_socket();
+
+                    // after init socket, init AudioManager
+                    AudioManager.init(socket)
+
 
                     // Show the content page
                     $("#game-room-signin-page").hide();
@@ -496,5 +502,8 @@ const GameRoom = (function() {
 
 	$(window).on("resize", resizeGameStage);
 
-    return { init, validate };
+    return {
+        init,
+        validate, 
+    };
 })();

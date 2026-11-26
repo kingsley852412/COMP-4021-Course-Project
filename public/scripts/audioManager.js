@@ -5,7 +5,7 @@ const AudioManager = (function() {
         gameover:       new Audio(sounds_folder_path + "/gameover.mp3"),
         gamewin:        new Audio(sounds_folder_path + "/gamewin.mp3"),
         buttonClick:    new Audio(sounds_folder_path + "/buttonClick.mp3"),
-		chop:         new Audio(sounds_folder_path + "/chop.mp3"),
+		    chop:         new Audio(sounds_folder_path + "/chop.mp3"),
         bomb_pickup:  new Audio(sounds_folder_path + "/bomb_pickup.mp3"),
         bomb:         new Audio(sounds_folder_path + "/bomb.mp3"),
         //collect:      new Audio(sounds_folder_path + "/collect.mp3"),
