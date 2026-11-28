@@ -412,20 +412,16 @@ const GameRoom = (function() {
 		const treebottom1 = Tree(tree_context, 500, 154*6, "bottom");
 		tree_context.clearRect(0, 0, 1920, 1080);
 		
-		//treebottom1.draw();
 		me_treeLogs.push(treebottom1);
 		for (let i = 0; i < 6; i++){
 				if (me.remaining_tree[i] === 'n'){
 					const treelog = Tree(tree_context, 500, (5-i)*154, "nothing");
-					//treelog.draw();
 					me_treeLogs.push(treelog);
 				}else if (me.remaining_tree[i] === 'l'){
 					const treelog = Tree(tree_context, 500, (5-i)*154, "left");
-					//treelog.draw();
 					me_treeLogs.push(treelog);
 				}else if (me.remaining_tree[i] === 'r'){
 					const treelog = Tree(tree_context, 500, (5-i)*154, "right");
-					//treelog.draw();
 					me_treeLogs.push(treelog);
 				}
 		}

@@ -448,6 +448,7 @@ io.on("connection", (socket) => {
 
         // Consume the bomb
         player.have_bomb = false;
+		player.status = 2;
 		socket.emit("play_sfx", { sound: "bomb" });
 
         // Clear up to 10 trunks from the front of the tree.
