@@ -300,8 +300,8 @@ io.on("connection", (socket) => {
             have_bomb: false, 
             remaining_tree: treeGenerator(),       // a string representing the Tree
             scores: 0,
-			dir: 0,
-			status: 0
+			dir: 0,  // the direction where player chops tree: 1: left 2: right
+			status: 0  // to control which sprite image to be used: 0: default 1: chop 2: bomb
         };
 
         //

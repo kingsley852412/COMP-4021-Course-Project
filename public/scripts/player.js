@@ -6,8 +6,6 @@
 const Player = function(ctx, x, y, gameArea, col, dir, status) {
 
     // This is the sprite sequences of the player facing different directions.
-    // It contains the idling sprite sequences `idleLeft`, `idleUp`, `idleRight` and `idleDown`,
-    // and the moving sprite sequences `moveLeft`, `moveUp`, `moveRight` and `moveDown`.
     const sequences = {
         /* Blue man */
         blueIdleL:  { x: 0, y: 0, width: 357, height: 280, count: 1, timing: 100, loop: false },
@@ -26,18 +24,13 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
 		greenBombR:  { x: 357*3, y:  560, width: 357, height: 280, count: 1, timing: 100, loop: false }
     };
 
-    // This is the sprite object of the player created from the Sprite module.
-    
-
-    // This function sets the player's chopping direction.
-    // - `dir` - the chopping direction  
+    // This function changes sprite imagae to chopping according to player's chopping direction.
+    // - `dir` - the chopping direction, 1: left 2: right
     const chop = function(dir) {
 		
         if (dir >= 1 && dir <= 2) {
 			const { x, y } = sprite.getXY(); 
-			//console.log('og: ', x, ' ', y);
 			if (color === 0){ // player blue
-			//console.log('dir: ', dir);
 				switch (dir) {
 					case 1: {
 						sprite.setSequence(sequences.blueChopL);  
@@ -50,7 +43,7 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
 						break;
 					}
 				}
-			}else{ //oppo
+			}else{ //opponent
 				switch (dir) {
 					case 1: {
 						sprite.setSequence(sequences.greenChopL); 
@@ -65,10 +58,11 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
 				}
 			}
 			sprite.draw();
-            direction = dir;
         }
     };
 	
+	// This function changes sprite imagae to bombing according to player's chopping direction.
+    // - `dir` - the bombing direction, 1: left 2: right
 	const bomb = function(dir) {	
         if (dir >= 1 && dir <= 2) {
 			const { x, y } = sprite.getXY(); 
@@ -86,7 +80,7 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
 						break;
 					}
 				}
-			}else{ //oppo
+			}else{ //opponent green
 				switch (dir) {
 					case 1: {
 						sprite.setSequence(sequences.greenBombL); 
@@ -101,27 +95,24 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
 				}
 			}
 			sprite.draw();
-            direction = dir;
         }
     };
 
-    // This function stops the player from moving.
+    // This function changes sprite image to Idle.
     // - `dir` - the moving direction when the player is stopped (1: Left, 2: Up, 3: Right, 4: Down)
     const stop = function() {
-        if (direction >= 1 && direction <= 2) {
+        if (dir >= 1 && dir <= 2) {
 			const { x, y } = sprite.getXY(); 
             if (color === 0){ // player blue
 				switch (dir) {
 					case 1: {
 						sprite.setSequence(sequences.blueIdleL);  
 						sprite.setXY(330, y); 
-						
 						break;
 					}
 					case 2: {
 						sprite.setSequence(sequences.blueIdleR);
 						sprite.setXY(330 + 300 , y); 
-				
 						break;
 					}
 				}
@@ -130,13 +121,11 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
 					case 1: {
 						sprite.setSequence(sequences.greenIdleL); 
 						sprite.setXY(1580 - 300, y); 
-			
 						break;
 					}
 					case 2: {
 						sprite.setSequence(sequences.greenIdleR); 
-						sprite.setXY(1580, y);
-									
+						sprite.setXY(1580, y);		
 						break;
 					}
 				}
@@ -144,32 +133,8 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
 			
         }
     };
-
-    // This function updates the player depending on his movement.
-    // - `time` - The timestamp when this function is called
-    const update = function(time) {
-        /* Update the player if the player is moving */
-        if (direction != 0) {
-            let { x, y } = sprite.getXY();
-
-            /* Move the player */
-            switch (direction) {
-                case 1: x -= speed / 60; break;
-                case 2: y -= speed / 60; break;
-                case 3: x += speed / 60; break;
-                case 4: y += speed / 60; break;
-            }
-
-            /* Set the new position if it is within the game area */
-            if (gameArea.isPointInBox(x, y))
-                sprite.setXY(x, y);
-        }
-
-        /* Update the sprite object */
-        sprite.update(time);
-    };
 	
-	
+	// This is the sprite object of the player created from the Sprite module.
 	const sprite = Sprite(ctx, x, y);
 
     // The sprite object is configured for the player sprite here.
@@ -184,13 +149,10 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
     // - `1` - left
 	// - `2` - right
 
-    let direction = dir;
 
-    // This is the moving speed (pixels per second) of the player
-    let speed = 150;
 	
 	const color = col; // player: 0 , oppo: 1
-	if (color === 1 && direction === 0){  //initialization for opponent
+	if (color === 1 && dir === 0){  //initialization for opponent
 		sprite.setSequence(sequences.greenIdleR)
 			  .setXY(1580, 820);
 	}
@@ -208,6 +170,5 @@ const Player = function(ctx, x, y, gameArea, col, dir, status) {
         stop: stop,
         getBoundingBox: sprite.getBoundingBox,
         draw: sprite.draw,
-        update: update
     };
 };
