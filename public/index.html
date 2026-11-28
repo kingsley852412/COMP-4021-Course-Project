@@ -4,71 +4,21 @@
     <title>The Game Room</title>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <link href="style.css" rel="stylesheet">
-	<style> 
-	#timberman-game-page {
-		position: relative;
-		width: 1920px;
-		height: 1080px;
-		transform-origin: top left;
-	}
 
-	#timberman-game-page svg,
-	#timberman-game-page canvas {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		height: 100%;
-	}
-
-	#timberman-game-page svg {
-		z-index: 1;
-	}
-
-	#tree-canvas {
-		z-index: 2;
-	}
-
-	#player-canvas {
-		z-index: 3;
-	}
-	
-	.top-layer {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		z-index: 4;
-	}
-	
-	.bomb-icon {
-		position: absolute;
-		top: 100px;
-		width: 257px;   /* adjust to match your image/HUD scale */
-		height: 325px;
-	}
-	
-	#player-bomb {	
-		left: 25px;
-		
-	}
-	
-	#opponent-bomb {
-		right: 25px;
-	}
-	
-
-	
-	</style>
 </head>
 <body>
     <!-- The game room area -->
     <div id="game-room-area">
+	
+		<img id="tree-img" class="bg-img" src="../images/Bg-tree.png">
+		<img id="green-man" class="bg-img" src="../images/Green-man.png">
+		<img id="blue-man" class="bg-img" src="../images/Blue-man.png">
 
         <!-- The game room start page -->
         <div id="game-room-start-page">
             <div class="row">
                 <div class="col">
-                    <div class="title">The Game Room</div>
+                    <div class="title">Timberman</div>
                     <div class="row">
                         <button id="start-signin-button">Sign In</button>
                         <button id="start-register-button">Register</button>
@@ -130,14 +80,14 @@
                         <span id="game-room-user-name">name</span>!
                     </div>
 
-                    <div>
+                    <div id="instruction">
                     <ul>
                         <li>the goal of the game is to use left and right arrow key to cut down a very tall tree with branches on the side.</li>
                         <li>during the process, player has to use the correct arrow key to dodge the branches from left and right, while competing with the other player to cut down the tree with least time.</li>
                         <li>Cutting tree has a chance of Getting Bomb as a bonus item, which can be used by pressing spacekey, removing 10 trunks from the tree immediately</li>
                     </ul>
 
-                    </div>
+                    </div id="instruction">
 
                     <form id="join-game-form" class="col">
                         <div class="row"><button id="join-game-button" type="submit">Join a Game!</button></div>
@@ -212,8 +162,8 @@
         <!-- this page shows scores for players after game-over -->
         <div id="game-over-page" style="display: none">
             <div class = "title" id = "game-over-message">You (Win/Lose)!!!</div>
-            <div class = "title">Your Score: <span id = "player-score">not Initialized</span></div>
-            <div class = "title">Opponent's Score: <span id = "opponent-score">not Initialized</span></div>
+            <div class = "title2">Your Score: <span id = "player-score">not Initialized</span></div>
+            <div class = "title2">Opponent's Score: <span id = "opponent-score">not Initialized</span></div>
 
             <form id="play-again-form" class="col">
                 <div class="row"><button id="play-again-button" type="submit">Play Again!</button></div>

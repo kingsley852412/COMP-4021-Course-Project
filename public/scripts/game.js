@@ -172,7 +172,8 @@ const GameRoom = (function() {
         $("#game-over-logout-button").on("click", function(e){
             // Do not submit the form
             e.preventDefault();
-
+			$("#green-man").attr("src", "../images/Green-man.png");
+			$("#blue-man").attr("src", "../images/Blue-man.png");
             $("#game-over-page").hide()
             logout();
         });
@@ -180,7 +181,8 @@ const GameRoom = (function() {
         $("#play-again-button").on("click", function(e) {
             // Do not submit the form
             e.preventDefault();
-            
+            $("#green-man").attr("src", "../images/Green-man.png");
+			$("#blue-man").attr("src", "../images/Blue-man.png");
             $("#game-over-page").hide()
             load_before_joining_page()
         });
@@ -196,7 +198,8 @@ const GameRoom = (function() {
                 $("#join-message").text("Socket not connected. Please try again.");
                 return;
             }
-
+			
+			$("#green-man").attr("src", "../images/Green-man-matching.png");
             // Send a join_game request via socket
             socket.emit("join");
         });
@@ -237,6 +240,7 @@ const GameRoom = (function() {
         });
 		
 		$(document).on("keyup", function(e) {
+			//For changing player sprite image back to idle.
 			if (!$("#timberman-game-page").is(":visible")) return;
 			e.preventDefault();
 			socket.emit("key_up");
@@ -308,6 +312,7 @@ const GameRoom = (function() {
             // switch to gameplay page
             $("#match-making-page").hide();
             $("#timberman-game-page").show();
+			$(".bg-img").hide();
 
             render_game(players)
         });
@@ -327,6 +332,7 @@ const GameRoom = (function() {
 
             $("#timberman-game-page").hide();
             $("#game-over-page").show();
+			$(".bg-img").show();
 
             // shows the Game Scores here...
             const me = players[socket.id];         // ← your own entry
@@ -340,17 +346,18 @@ const GameRoom = (function() {
     
             if (me.is_winner){
                 $('#game-over-message').text("You Win!!!");
+				$("#green-man").attr("src", "../images/Green-man-lose.png");
+				$("#blue-man").attr("src", "../images/Blue-man-win.png");
+				
 				
             }else{
                 $('#game-over-message').text("You Lose!!!");
+				$("#green-man").attr("src", "../images/Green-man-win.png");
+				$("#blue-man").attr("src", "../images/Blue-man-lose.png");
 			
 			}
         });
 		
-		//socket.on("play_sfx", ({ sound, volume }) => {
-		//	AudioManager.playSfx(sound, volume);
-		//});
-
     }
 
     const logout = function(e) {
@@ -397,64 +404,53 @@ const GameRoom = (function() {
         // and you can find the opponent by removing yourself:
         const opponentId = Object.keys(players).find(id => id !== socket.id);
         const opponent = players[opponentId];
-		
-		
-		
-		
+
+
 		// Draw Trees. There are only 6 visible choppable tree logs. Inside the array, the unchoppable bottom tree trunk is at treeLogs[0], choppable tree log is at treeLogs[1-6].
 		const me_treeLogs = [];
 		const treebottom1 = Tree(tree_context, 500, 154*6, "bottom");
 		tree_context.clearRect(0, 0, 1920, 1080);
-		
-		//treebottom1.draw();
 		me_treeLogs.push(treebottom1);
 		for (let i = 0; i < 6; i++){
 				if (me.remaining_tree[i] === 'n'){
 					const treelog = Tree(tree_context, 500, (5-i)*154, "nothing");
-					//treelog.draw();
 					me_treeLogs.push(treelog);
 				}else if (me.remaining_tree[i] === 'l'){
 					const treelog = Tree(tree_context, 500, (5-i)*154, "left");
-					//treelog.draw();
 					me_treeLogs.push(treelog);
 				}else if (me.remaining_tree[i] === 'r'){
 					const treelog = Tree(tree_context, 500, (5-i)*154, "right");
-					//treelog.draw();
 					me_treeLogs.push(treelog);
 				}
 		}
 		for (log of me_treeLogs){
 			log.draw();
 		}
-		
 	
 		const opponent_treeLogs = [];
 		const treebottom2 = Tree(tree_context, 1400, 154*6, "bottom");
-		treebottom2.draw();
 		opponent_treeLogs.push(treebottom2);
 		for (let i = 0; i < 6; i++){
 				if (opponent.remaining_tree[i] === 'n'){
 					const treelog = Tree(tree_context, 1400, (5-i)*154, "nothing");
-					treelog.draw();
 					opponent_treeLogs.push(treelog);
 				}else if (opponent.remaining_tree[i] === 'l'){
 					const treelog = Tree(tree_context, 1400, (5-i)*154, "left");
-					treelog.draw();
 					opponent_treeLogs.push(treelog);
 				}else if (opponent.remaining_tree[i] === 'r'){
 					const treelog = Tree(tree_context, 1400, (5-i)*154, "right");
-					treelog.draw();
 					opponent_treeLogs.push(treelog);
 				}
+		}
+		for (log of opponent_treeLogs){
+			log.draw();
 		}
 		
 
 		// draw players		
 		player_context.clearRect(0, 0, 1920, 1080);
 		const gameArea = BoundingBox(tree_context, 0, 0, 1920, 1080);
-		//const { x1, y1 } = img_player.getXY();
 		const img_player = Player(player_context, 0, 0, gameArea, 0, me.dir, me.status); // The player
-		//const { x2, y2 } = img_opponent.getXY();
 		const img_opponent = Player(player_context, 0, 0, gameArea, 1, opponent.dir, opponent.status);
 		
 		img_player.draw();
@@ -474,12 +470,13 @@ const GameRoom = (function() {
 		} else {
 			$("#player-bomb").attr("src", NO_BOMB_IMG);
 		}
-
 		if (opponent.have_bomb) {
 			$("#opponent-bomb").attr("src", BOMB_IMG);
 		} else {
 			$("#opponent-bomb").attr("src", NO_BOMB_IMG);
 		}
+		
+		
         
     }
 

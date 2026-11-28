@@ -44,8 +44,6 @@ const Sprite = function(ctx, x, y) {
 
     // This function returns the readiness of the sprite sheet image.
     const isReady = function() {
-		//console.log(sheet.complete);
-		//console.log(sheet.naturalHeight != 0);
         return sheet.complete && sheet.naturalHeight != 0;
     };
 
@@ -152,9 +150,6 @@ const Sprite = function(ctx, x, y) {
 			size.width, size.height
 		);
 		
-		
-
-
         /* Restore saved settings */
         ctx.restore();
 		
@@ -162,7 +157,6 @@ const Sprite = function(ctx, x, y) {
      
     // This function draws the shadow and the sprite.
     const draw = function() {
-		//console.log("draw");
 			if (isReady()) {
 				drawSprite();
 			} else {
@@ -171,46 +165,6 @@ const Sprite = function(ctx, x, y) {
 			
 			return this;
 	};
-
-    // This function updates the sprite by moving to the next sprite
-    // at appropriate time.
-    // - `time` - The timestamp when this function is called
-    const update = function(time) {
-		return;
-		
-        if (lastUpdate == 0) lastUpdate = time;
-		const size = getDisplaySize();
-
-        /* TODO */
-        /* Move to the next sprite when the timing is right */
-
-        /* Determine if it is time to draw the next sprite */
-        if (time - lastUpdate >= sequence.timing) {
-                /* Clear the previous sprite */
-                ctx.clearRect(parseInt(x - size.width / 2), parseInt(y - size.height / 2),
-									size.width, size.height);
-
-                /* Draw the sprite */
-                //drawSprite();
-				//console.log("draw sprite");
-
-                /* Move to the next sprite */
-        
-				if (sequence.loop == false){
-					if (index + 1 < sequence.count) index++;
-				}else{
-					index++;
-					if (index == sequence.count) index = 0;
-				}
-
-                /* Remember the time information */
-                lastUpdate = time;
-        }
-     
-
-
-        return this;
-    };
 
     // The methods are returned as an object here.
     return {
@@ -224,6 +178,5 @@ const Sprite = function(ctx, x, y) {
         getBoundingBox: getBoundingBox,
         isReady: isReady,
         draw: draw,
-        //update: update
     };
 };

@@ -300,8 +300,8 @@ io.on("connection", (socket) => {
             have_bomb: false, 
             remaining_tree: treeGenerator(),       // a string representing the Tree
             scores: 0,
-			dir: 0,
-			status: 0
+			dir: 0,  // the direction where player chops tree: 1: left 2: right
+			status: 0  // to control which sprite image to be used: 0: default 1: chop 2: bomb
         };
 
         //
@@ -399,7 +399,7 @@ io.on("connection", (socket) => {
 		if (side === 'l') player.dir = 1;
 		else player.dir = 2;
 		player.status = 1;
-		socket.emit("play_sfx", { sound: "chop" });
+		io.emit("play_sfx", { sound: "chop", playerID: socket.id });
 
         // ── DEATH CHECK ──
         // e.g. Pressing left when the NEXT trunk has a left branch (or right/right) = hit it
@@ -419,7 +419,7 @@ io.on("connection", (socket) => {
         // 5% chance to gain a bomb
         if (Math.random() < get_bomb_probability) {
             player.have_bomb = true;
-			socket.emit("play_sfx", { sound: "bomb_pickup" });
+			io.emit("play_sfx", { sound: "bomb_pickup", playerID: socket.id }); 
         }
 
         // Sync both browsers
@@ -448,7 +448,8 @@ io.on("connection", (socket) => {
 
         // Consume the bomb
         player.have_bomb = false;
-		socket.emit("play_sfx", { sound: "bomb" });
+		player.status = 2;
+		io.emit("play_sfx", { sound: "bomb", playerID: socket.id });
 
         // Clear up to 10 trunks from the front of the tree.
         // Math.min handles the "fewer than 10 left" case without going negative.
@@ -473,7 +474,7 @@ io.on("connection", (socket) => {
 
         // Give Free bomb
         player.have_bomb = true;
-		socket.emit("play_sfx", { sound: "bomb_pickup" });
+		io.emit("play_sfx", { sound: "bomb_pickup", playerID: socket.id });
 
         // Sync both browsers so they see the free Bomb
         io.emit("game_state_update", players);
