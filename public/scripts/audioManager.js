@@ -57,8 +57,15 @@ const AudioManager = (function() {
                 playSFX('gameover')
         });
 		
-		socket.on("play_sfx", ({ sound, volume }) => {
-            playSFX(sound);
+		socket.on("play_sfx",  ({ sound, volume, playerID }) => {
+			let finalVolume = volume;
+
+			if (sound === "chop" || sound === "bomb" || sound === "bomb_pickup") {
+				const isSelf = Boolean(playerID) && playerID === socket.id;
+				finalVolume = isSelf ? 0.7 : 0.3;
+			}
+					
+            playSFX(sound, finalVolume);
         });
 
 		
@@ -95,15 +102,16 @@ const AudioManager = (function() {
     };
 
 
-    const playSFX = function(soundName) {
+    const playSFX = function(soundName, volume = 0.7) {
         const sound = sounds[soundName];
 
         if (soundName == "background"){
             console.warn(`warning: use startBGM() to play the BGM instead!`);
         }
-
+		
         if (sound) {
             // Clone the node so rapid sound triggers don't cut each other off
+			sound.volume = volume;
             sound.play().catch(err => {
                 console.log(`SFX "${soundName}" play blocked:`, err);
             });
